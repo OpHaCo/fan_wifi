@@ -1,6 +1,8 @@
 # Description
 Resurrect your old fan! Add Wifi connectivity and control it from anyway! 
 
+Project has been done in Amiqual4Home Equipex Creativity Lab - https://amiqual4home.inria.fr/
+
 # Prerequisities
  * Spark Core with latest firmware updates :
      

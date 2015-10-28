@@ -1,5 +1,6 @@
 # Description
- 
+Resurrect your old fan! Add Wifi connectivity and control it from anyway! 
+
 # Prerequisities
  * Spark Core with latest firmware updates :
      
@@ -30,7 +31,7 @@
    * SPEED3
 
  * For get the status :
-   *  curl https://api.spark.io/v1/devices/'SPARK_CORE_ID'/state\?access_token\='YOUR_TOKEN'
+    curl https://api.spark.io/v1/devices/'SPARK_CORE_ID'/state\?access_token\='YOUR_TOKEN'
    * state = 0 : OFF
    * state = 1 : SPEED1
    * state = 2 : SPEED2

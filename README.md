@@ -13,19 +13,19 @@ Project has been done in Amiqual4Home Equipex Creativity Lab - https://amiqual4h
  * 3 Relay tinkerkit
  * A fan
 
-<img src="https://github.com/OpHaCo/fan_wifi.git/master/img/Fan.jpg" width="500">
+<img src="https://github.com/OpHaCo/fan_wifi/blob/master/img/Fan.jpg" width="500">
 
 # Setup
 ## hardware 
 * For this model, there are four buttons for three speed and one stop. They are connected to the input pullup sparkcore in D0, D1 , D2 which are assosié three relays control the motor speed.
-<img src="https://github.com/OpHaCo/fan_wifi.git/master/img/Sparkcore.jpg" width="500">
+<img src="https://github.com/OpHaCo/fan_wifi/blob/master/img/Sparkcore.jpg" width="500">
 * The motor speed are control by three wire :
   * Blue = speed 1
   * White = speed 2
   * Red = speed 3
-<img src="https://github.com/OpHaCo/fan_wifi.git/master/img/Motor.jpg" width="500">
+<img src="https://github.com/OpHaCo/fan_wifi/blob/master/img/Motor.jpg" width="500">
 * connect each relay on a three wire and on live wire (brown 220v),The relay are connected to the output sparkcore in D3, D4 , D5 and Vin(5v), GND.
-<img src="https://github.com/OpHaCo/fan_wifi.git/master/img/Relay.jpg" width="500">
+<img src="https://github.com/OpHaCo/fan_wifi/blob/master/img/Relay.jpg" width="500">
 * for the sparkcore and the relay is supplied with 5V, install a portable charger transformer.
 
 # Commands

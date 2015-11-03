@@ -1,3 +1,5 @@
+// This #include statement was automatically added by the Particle IDE.
+#include "MQTT/MQTT.h"
 
 /******************************************************************************
  * @file    roomba spark firmware
@@ -5,19 +7,19 @@
  * @date    28 oct. 2015   
  *
  * @brief Spark core firmware controlling a fan over WIFI
- * 
+ *
  * Project : fan_wifi - https://github.com/OpHaCo/fan_wifi
  * Contact:  Rémi Pincent - remi.pincent@inria.fr
- * 
+ *
  * Revision History:
  * Refer https://github.com/OpHaCo/fan_wifi
- * 
+ *
  * LICENSING
  * fan_wifi (c) by Pierre Barralon
- * 
+ *
  * fan_wifi is licensed under a
  * Creative Commons Attribution 3.0 Unported License.
- * 
+ *
  * You should have received a copy of the license along with this
  * work.  If not, see <http://creativecommons.org/licenses/by/3.0/>.
  *****************************************************************************/
@@ -37,6 +39,7 @@ typedef enum{
     SPEED3 = 3
 }EFanState;
 
+void connectMQTT(void);
 int fanControl(String command);
 void stopFan(void);
 void setFanSpeed1(void);
@@ -44,10 +47,38 @@ void setFanSpeed2(void);
 void setFanSpeed3(void);
 void returnstate(void);
 bool isStateOk(bool state, int pin, int nbChecks);
+void mqttCallback(char* topic, byte* payload, unsigned int length);
+
 int statu = OFF;
+
+//iot.eclipse.org
+//byte mqttserver[] = { 198,41,30,241 }; 
+// glados
+byte mqttserver[] = { 192,168,130,22 };
+MQTT mqttClient(mqttserver, 1883, mqttCallback);
+
+char* mqttFanCmdsTopic = "fan/fanCmds";
+char* mqttFanCloudTopic = "fan/particleCloud";
+
+SYSTEM_MODE(MANUAL);
+
+void connectMQTT(void)
+{
+   Serial.println("connect mqtt");
+   mqttClient.connect("fan_spark"); 
+   if (mqttClient.isConnected()) 
+   {
+       // Now a single roomba can be connected at a time
+       mqttClient.subscribe(mqttFanCmdsTopic);
+       mqttClient.subscribe(mqttFanCloudTopic);
+       Serial.println("connected to mqtt");
+   }
+}
 
 void setup()
 {
+    Serial.begin(115200);
+    Serial.println("Start fan control");
     Particle.function("fanAPI", fanControl); // Expose the fan function to the Spark API
     
     pinMode(vit1, OUTPUT);                  // sets the pins as output
@@ -58,13 +89,26 @@ void setup()
     pinMode(push3, INPUT_PULLUP);           // sets the pins as input
      
     Particle.variable("state", statu);
-    
+    connectMQTT();
+    Particle.connect();
     attachPushIt();
 }
 
 void loop()
 {
-    delay(20);
+    static int loopIndex;
+    loopIndex++;
+    if (mqttClient.isConnected()) {
+        mqttClient.loop(); 
+    }
+    else
+    {
+        Serial.print("mqtt client not connected - id=");
+        Serial.println(loopIndex);
+        connectMQTT();
+     }  
+     if(Particle.connected())
+       Particle.process();
 }
 
 bool isStateOk(bool state, int pin, int nbChecks)               //check the input is stable
@@ -82,7 +126,7 @@ bool isStateOk(bool state, int pin, int nbChecks)               //check the inpu
 void push1Change(void)                          // interupt buton1 change
 {
     if(!isStateOk(digitalRead(push1), push1, 10))       //check push1 is stable
-       return; 
+       return;
     
     if ((digitalRead(push1)==0) & (digitalRead(push2)==1) & (digitalRead(push3)==1)){
         setFanSpeed1();
@@ -95,7 +139,7 @@ void push1Change(void)                          // interupt buton1 change
 void push2Change(void)                          // interupt buton2 change
 {
     if(!isStateOk(digitalRead(push2), push2, 10))       //check push2 is stable
-       return; 
+       return;
     
     if ((digitalRead(push1)==1) & (digitalRead(push2)==0) & (digitalRead(push3)==1)){
         setFanSpeed2();
@@ -108,7 +152,7 @@ void push2Change(void)                          // interupt buton2 change
 void push3Change(void)                          // interupt buton3 change
 {
     if(!isStateOk(digitalRead(push3), push3, 10))       //check push3 is stable
-       return; 
+       return;
     
     if ((digitalRead(push1)==1) & (digitalRead(push2)==1) & (digitalRead(push3)==0)){
         setFanSpeed3();
@@ -195,5 +239,30 @@ int fanControl(String command)                      //command wifi
     else
     {
         return -1;
+    }
+}
+
+void mqttCallback(char* topic, byte* payload, unsigned int length) {
+    char p[length + 1];
+    memcpy(p, payload, length);
+    p[length] = NULL;
+    String message(p);
+    Serial.print("received MQTT payload ");
+    Serial.print(message);
+    Serial.print(" on topic ");
+    Serial.println(topic);
+    if(strcmp(topic, mqttFanCloudTopic) == 0)
+    {
+        if (message.equals("ENABLE") && !Particle.connected()){
+            Particle.connect();
+        }
+        else if(message.equals("DISABLE") && Particle.connected())      
+        {
+            Particle.disconnect();
+        }
+    }
+    else if(strcmp(topic, mqttFanCmdsTopic) == 0)
+    {
+        fanControl(message);
     }
 }

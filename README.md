@@ -4,6 +4,7 @@ Resurrect your old fan! Add Wifi connectivity and control it from anyway!
 Project has been done in Amiqual4Home Equipex Creativity Lab - https://amiqual4home.inria.fr/
 
 # Prerequisities
+## Hardware
  * Spark Core with latest firmware updates :
      
     ```
@@ -14,6 +15,9 @@ Project has been done in Amiqual4Home Equipex Creativity Lab - https://amiqual4h
  * A fan
 
 <img src="https://github.com/OpHaCo/fan_wifi/blob/master/img/Fan.jpg" width="500">
+
+## software 
+ * MQTT broker - (do not use mosquitto 1.4.3 - https://github.com/hirotakaster/MQTT/issues/13 ) 
 
 # Setup
 ## hardware 
@@ -30,15 +34,50 @@ Project has been done in Amiqual4Home Equipex Creativity Lab - https://amiqual4h
 
 <img src="https://github.com/OpHaCo/fan_wifi/blob/master/img/Relay.jpg" width="500">
 * for the sparkcore and the relay is supplied with 5V, install a portable charger transformer.
-
+ 
 # Commands
-    curl https://api.spark.io/v1/devices/'SPARK_CORE_ID'/fanAPI -d access_token='YOUR_TOKEN' -d "params=CMD_NAME"
+
+Commands can be sent either using MQTT protocol or using Particle API
+
+## Control commands - as string
  
  * CMD_NAME =
    * POWEROFF
    * SPEED1
    * SPEED2
    * SPEED3
+
+## Fan control over particle API
+
+Command line syntax :
+
+    curl https://api.spark.io/v1/devices/'SPARK_CORE_ID'/fanAPI -d access_token='YOUR_TOKEN' -d "params=CMD_NAME"
+
+  e.g. :     
+  
+    curl https://api.spark.io/v1/devices/'SPARK_CORE_ID'/fanAPI -d access_token='YOUR_TOKEN' -d "params=SPEED2"
+
+## Fan control over MQTT
+ * a valid MQTT broker must be defined in Photon code mqttserver variable 
+
+### topics
+#### "fan/fanCmds" : fan control commands
+In this topic, payload containing command name must be sent, 
+
+e.g :
+
+    mosquitto_pub -h BROKER_IP -t fan/fanCmds -m CMD_NAME
+ 
+#### "fan/particleCloud" : fan cloud connection
+To enable cloud connection
+    
+    mosquitto_pub -h BROKER_IP -t fan/particleCloud -m ENABLE
+    
+To disable cloud connection
+    
+    mosquitto_pub -h BROKER_IP -t fan/particleCloud -m ENABLE
+
+## Input commands
 
  * For get the status :
 
